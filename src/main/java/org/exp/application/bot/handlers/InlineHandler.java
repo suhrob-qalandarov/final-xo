@@ -4,9 +4,9 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.InlineQuery;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
 import com.pengrad.telegrambot.model.request.InlineQueryResultArticle;
-import com.pengrad.telegrambot.model.request.InlineQueryResultsButton;
 import com.pengrad.telegrambot.model.request.InputTextMessageContent;
 import com.pengrad.telegrambot.request.AnswerInlineQuery;
+import jakarta.transaction.Transactional;
 import org.exp.application.bot.processes.multigame.MultiGameService;
 import org.exp.application.models.entity.game.MultiGame;
 import org.exp.application.services.TelegramButtonService;
@@ -15,6 +15,8 @@ import org.exp.application.usekeys.DataHandler;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Arrays;
 
 @Slf4j
 @Component
@@ -26,11 +28,12 @@ public class InlineHandler implements DataHandler<InlineQuery> {
     private final MultiGameService gameService;
     private final TelegramButtonService buttonService;
 
+    @Transactional
     @Override
     public void handle(InlineQuery inlineQuery) {
         try {
             Long creatorId = inlineQuery.from().id();
-            /// user checking
+            /// user checking async
             userService.getOrCreateTgUserAsync(inlineQuery);
             String fullName = userService.buildFullNameFromUpdate(inlineQuery);
             MultiGame multiGame = gameService.getOrCreateMultiGame(creatorId);
@@ -40,9 +43,9 @@ public class InlineHandler implements DataHandler<InlineQuery> {
                             .inputMessageContent(new InputTextMessageContent("❌ " + fullName + " 👈 \n⭕ - ?"))
                             .replyMarkup(buttonService.getMultiBoardBtns(multiGame.getId(), new int[3][3]))
             };
+            log.info("info {}", Arrays.toString(results));
             telegramBot.execute(
                     new AnswerInlineQuery(inlineQuery.id(), results)
-                            .button(new InlineQueryResultsButton("@xoDemoBot", "bot_uri"))
             );
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,0 +1,115 @@
+name: Build and Deploy to Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # "Run workflow" tugmasi uchun
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Reponi checkout qilish
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. JDK 21 o'rnatish
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 3. JAR faylini build qilish
+      - name: Build JAR with Maven
+        run: ./mvnw clean package -DskipTests
+
+      # 4. Fayllar mavjudligini tekshirish (debug)
+      - name: List build artifacts
+        run: |
+          echo "=== target/ ==="
+          ls -la target/ || echo "target/ yo'q"
+          echo "=== JAR faylini tekshirish ==="
+          if [ -f "target/app.jar" ]; then
+            echo "✅ target/app.jar mavjud"
+            ls -lh target/app.jar
+          else
+            echo "❌ target/app.jar topilmadi!"
+            echo "target/ ichidagi fayllar:"
+            ls -la target/ || true
+            exit 1
+          fi
+          echo "=== docker-compose.yml ==="
+          cat docker-compose.yml || echo "docker-compose.yml yo'q"
+          echo "=== Dockerfile ==="
+          cat Dockerfile || echo "Dockerfile yo'q"
+
+      # 5. Serverda katalog yaratish + docker guruhiga qo'shish
+      - name: Prepare server directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            mkdir -p ~/final-xo
+            # Docker guruhiga qo'shish (1 marta yetarli)
+            sudo usermod -aG docker $USER || true
+
+      # 6. Fayllarni serverga ko'chirish (JAR + compose + Dockerfile)
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "target/app.jar,docker-compose.yml,Dockerfile"
+          target: /home/ubuntu/final-xo/
+          overwrite: true
+          strip_components: 0
+
+      # 7. Serverda deploy qilish
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/final-xo
+
+            # Fayllarni tekshirish
+            echo "=== Serverda fayllar ==="
+            ls -la /home/ubuntu/final-xo/ || echo "final-xo katalogida fayllar topilmadi"
+
+            # .env faylini GitHub Secrets dan yaratish
+            cat > .env << EOF
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            SPRING_DATASOURCE_URL=jdbc:postgresql://game_db:5432/${{ secrets.POSTGRES_DB }}
+            SPRING_DATASOURCE_USERNAME=${{ secrets.POSTGRES_USER }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            EOF
+
+            # dos2unix o'rnatish va .env faylini tozalash (agar kerak bo'lsa)
+            sudo apt-get update -qq && sudo apt-get install -y dos2unix || true
+            dos2unix .env 2>/dev/null || true
+
+            # Docker Compose v2 bilan deploy
+            docker compose down || true
+            docker compose up -d --build
+
+            # Holatni ko'rsatish
+            echo "=== Containerlar holati ==="
+            docker compose ps
+
+            # Loglarni chiqarish
+            echo "=== game_bot loglari (oxirgi 50 qator) ==="
+            docker compose logs --tail=50 game_bot || echo "game_bot loglari yo'q"
+
+            echo "=== game_db loglari (oxirgi 20 qator) ==="
+            docker compose logs --tail=20 game_db || echo "game_db loglari yo'q"

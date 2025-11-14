@@ -1,33 +1,40 @@
 version: '3.8'
-
 services:
-  postgres:
+  game_db:
     image: postgres:15
-    container_name: postgres_db
+    container_name: game_db
     restart: always
     environment:
-      POSTGRES_DB: xo_demo_bot
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root123
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app-network
 
-  telegram-bot:
+  game_bot:
     build: .
-    container_name: telegram_bot
+    container_name: game_bot
     restart: always
     depends_on:
-      - postgres
+      - game_db
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/xo_demo_bot
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: root123
-      TELEGRAM_BOT_TOKEN: 7955275273:AAHBfrObu4K13owbah27Jyp54CiDTgxgiEc
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     ports:
       - "8080:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
