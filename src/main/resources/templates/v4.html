@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XO Game - Fast Version</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --accent-color: #00d2ff;
+            --success-color: #56ab2f;
+            --warning-color: #ff6b6b;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Simplified Navbar */
+        .navbar {
+            background: rgba(30, 60, 114, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            height: 60px;
+        }
+
+        .navbar-brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff !important;
+            letter-spacing: 1px;
+        }
+
+        .hamburger-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1.1rem;
+            color: #fff;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(0, 210, 255, 0.2);
+        }
+
+        /* Optimized Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(30, 60, 114, 0.95);
+            transition: left 0.25s ease;
+            z-index: 1040;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 210, 255, 0.1);
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-header h5 {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .sidebar-menu {
+            padding: 0.8rem 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-footer {
+            padding: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: background 0.2s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            margin: 0.2rem 0;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-color);
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+
+        .menu-item.active::before,
+        .menu-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .menu-item.active,
+        .menu-item:hover {
+            background: rgba(0, 210, 255, 0.15);
+            color: #fff;
+        }
+
+        .menu-item i {
+            margin-right: 0.8rem;
+            width: 20px;
+            font-size: 1.1rem;
+        }
+
+        /* Simplified Nested Sidebar */
+        .nested-sidebar {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(42, 82, 152, 0.95);
+            transition: left 0.25s ease;
+            z-index: 1045;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nested-sidebar.active {
+            left: var(--sidebar-width);
+        }
+
+        .back-btn {
+            background: rgba(255, 107, 107, 0.2);
+            border: none;
+            padding: 1rem;
+            width: 100%;
+            text-align: left;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        /* Simple Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1030;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 70px;
+            padding: 1rem;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Page System - Simplified */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Simplified Page Cards */
+        .page-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Simplified Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        /* Simplified Action Buttons */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .action-btn.primary {
+            background: rgba(0, 210, 255, 0.2);
+            border-color: rgba(0, 210, 255, 0.3);
+        }
+
+        .action-btn.success {
+            background: rgba(86, 171, 47, 0.2);
+            border-color: rgba(86, 171, 47, 0.3);
+        }
+
+        .action-btn.warning {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .action-btn.danger {
+            background: rgba(238, 90, 36, 0.2);
+            border-color: rgba(238, 90, 36, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        /* Simplified Feature Lists */
+        .feature-list {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-color);
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-item.friends {
+            border-left-color: var(--success-color);
+        }
+
+        .feature-item.bots {
+            border-left-color: var(--warning-color);
+        }
+
+        .feature-item.social {
+            border-left-color: #667eea;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .feature-content h4 {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .feature-content p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --sidebar-width: 220px;
+            }
+
+            .nested-sidebar.active {
+                left: 220px;
+            }
+
+            .page-card {
+                padding: 1.5rem;
+            }
+
+            .main-content {
+                padding: 0.8rem;
+            }
+        }
+
+        /* Custom Scrollbar - Simplified */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        /* Touch-friendly improvements */
+        .menu-item, .hamburger-btn, .back-btn, .action-btn {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* Prevent text selection on UI elements */
+        .navbar, .sidebar, .nested-sidebar {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center">
+            <button class="hamburger-btn me-3" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <span class="navbar-brand">XO</span>
+        </div>
+    </div>
+</nav>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeSidebars()"></div>
+
+<!-- Main Sidebar -->
+<div class="sidebar d-flex flex-column" id="mainSidebar">
+    <div class="sidebar-header">
+        <h5>
+            <i class="fas fa-gamepad me-2"></i>
+            Menu
+        </h5>
+    </div>
+
+    <div class="sidebar-menu">
+        <button class="menu-item" data-menu="home" onclick="openNestedSidebar('home')">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </button>
+        <button class="menu-item" data-menu="play" onclick="openNestedSidebar('play')">
+            <i class="fas fa-gamepad"></i>
+            <span>Play</span>
+        </button>
+        <button class="menu-item" data-menu="network" onclick="openNestedSidebar('network')">
+            <i class="fas fa-network-wired"></i>
+            <span>Network</span>
+        </button>
+    </div>
+
+    <div class="sidebar-footer">
+        <button class="menu-item" onclick="showPage('webui')">
+            <i class="fas fa-globe"></i>
+            <span>WEB UI</span>
+        </button>
+        <button class="menu-item" onclick="showPage('settings')">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </button>
+    </div>
+</div>
+
+<!-- Home Nested Sidebar -->
+<div class="nested-sidebar d-flex flex-column" id="homeSidebar">
+    <button class="back-btn" onclick="closeNestedSidebar()">
+        <i class="fas fa-arrow-left me-2"></i>Back to Menu
+    </button>
+    <div class="sidebar-menu">
+        <button class="menu-item" onclick="showPage('profile')">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
+        </button>
+        <button class="menu-item" onclick="showPage('dashboard')">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="menu-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>LogOut</span>
+        </button>
+    </div>
+</div>
+
+<!-- Play Nested Sidebar -->
+<div class="nested-sidebar d-flex flex-column" id="playSidebar">
+    <button class="back-btn" onclick="closeNestedSidebar()">
+        <i class="fas fa-arrow-left me-2"></i>Back to Menu
+    </button>
+    <div class="sidebar-menu">
+        <button class="menu-item" onclick="showPage('bots')">
+            <i class="fas fa-robot"></i>
+            <span>Play Bots</span>
+        </button>
+        <button class="menu-item" onclick="showPage('friends')">
+            <i class="fas fa-user-friends"></i>
+            <span>Play Friends</span>
+        </button>
+        <button class="menu-item" onclick="showPage('online')">
+            <i class="fas fa-globe-americas"></i>
+            <span>Play Online</span>
+        </button>
+    </div>
+</div>
+
+<!-- Network Nested Sidebar -->
+<div class="nested-sidebar d-flex flex-column" id="networkSidebar">
+    <button class="back-btn" onclick="closeNestedSidebar()">
+        <i class="fas fa-arrow-left me-2"></i>Back to Menu
+    </button>
+    <div class="sidebar-menu">
+        <button class="menu-item" onclick="showPage('social')">
+            <i class="fas fa-share-alt"></i>
+            <span>Social</span>
+        </button>
+        <button class="menu-item" onclick="showPage('friendslist')">
+            <i class="fas fa-user-friends"></i>
+            <span>Friends</span>
+        </button>
+        <button class="menu-item" onclick="showPage('chats')">
+            <i class="fas fa-comments"></i>
+            <span>Chats</span>
+        </button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="container-fluid">
+
+        <!-- Home/Dashboard Page (Default) -->
+        <div class="page active" id="dashboard">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-trophy me-3" style="color: #ffb347;"></i>
+                    XO GAME Dashboard
+                </h1>
+                <p class="page-subtitle">O'yinlar statistikasi va umumiy ma'lumotlar</p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="wins">12</div>
+                        <div class="stat-label">
+                            <i class="fas fa-trophy me-1"></i>
+                            Yutgan
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="losses">8</div>
+                        <div class="stat-label">
+                            <i class="fas fa-times-circle me-1"></i>
+                            Yutqazgan
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="draws">3</div>
+                        <div class="stat-label">
+                            <i class="fas fa-handshake me-1"></i>
+                            Durrang
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total">23</div>
+                        <div class="stat-label">
+                            <i class="fas fa-chart-line me-1"></i>
+                            Jami
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary" onclick="showPage('online')">
+                        <i class="fas fa-play me-2"></i>
+                        Tezkor O'yin
+                    </button>
+                    <button class="action-btn success" onclick="showPage('bots')">
+                        <i class="fas fa-robot me-2"></i>
+                        Bot bilan O'ynash
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div class="page" id="profile">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-user-circle me-3" style="color: #00d2ff;"></i>
+                    Profil
+                </h1>
+                <p class="page-subtitle">Shaxsiy ma'lumotlar va sozlamalar</p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>Foydalanuvchi nomi</h4>
+                                <p>Player_XO_2024</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-item friends">
+                            <div class="feature-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>Reyting</h4>
+                                <p>1250 ochko</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary">
+                        <i class="fas fa-edit me-2"></i>
+                        Profilni tahrirlash
+                    </button>
+                    <button class="action-btn warning">
+                        <i class="fas fa-camera me-2"></i>
+                        Avatar o'zgartirish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Play Bots Page -->
+        <div class="page" id="bots">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-robot me-3" style="color: #ff6b6b;"></i>
+                    Bot bilan O'ynash
+                </h1>
+                <p class="page-subtitle">Turli qiyinlik darajalarida botlar bilan o'ynang</p>
+
+                <div class="feature-list">
+                    <div class="feature-item bots">
+                        <div class="feature-icon">
+                            <i class="fas fa-battery-quarter"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Oson Bot</h4>
+                            <p>Yangi boshlovchilar uchun</p>
+                        </div>
+                    </div>
+                    <div class="feature-item bots">
+                        <div class="feature-icon">
+                            <i class="fas fa-battery-half"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>O'rta Bot</h4>
+                            <p>Qiyinroq va aqlliroq</p>
+                        </div>
+                    </div>
+                    <div class="feature-item bots">
+                        <div class="feature-icon">
+                            <i class="fas fa-battery-full"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Qiyin Bot</h4>
+                            <p>Professionallar uchun</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn success">
+                        <i class="fas fa-play me-2"></i>
+                        Oson bot bilan o'ynash
+                    </button>
+                    <button class="action-btn warning">
+                        <i class="fas fa-play me-2"></i>
+                        O'rta bot bilan o'ynash
+                    </button>
+                    <button class="action-btn danger">
+                        <i class="fas fa-play me-2"></i>
+                        Qiyin bot bilan o'ynash
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Play with Friends Page -->
+        <div class="page" id="friends">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-user-friends me-3" style="color: #56ab2f;"></i>
+                    Do'stlar bilan O'ynash
+                </h1>
+                <p class="page-subtitle">Do'stlaringiz bilan birga o'ynang</p>
+
+                <div class="feature-list">
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-wifi"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Mahalliy tarmoq</h4>
+                            <p>Bir WiFi orqali ulanish</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>QR kod bilan</h4>
+                            <p>Tez va oson ulanish</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Kod bilan kirish</h4>
+                            <p>6 raqamli kod orqali</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary">
+                        <i class="fas fa-plus me-2"></i>
+                        O'yin yaratish
+                    </button>
+                    <button class="action-btn success">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        O'yinga qo'shilish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Play Online Page -->
+        <div class="page" id="online">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-globe-americas me-3" style="color: #667eea;"></i>
+                    Online O'ynash
+                </h1>
+                <p class="page-subtitle">Butun dunyo bo'ylab o'yinchilar bilan o'ynang</p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Tasodifiy raqib</h4>
+                            <p>Avtomatik ravishda raqib topish</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Reyting o'yinlari</h4>
+                            <p>Reytingingizni oshiring</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Tournament</h4>
+                            <p>Turnirda ishtirok eting</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">1,247</div>
+                        <div class="stat-label">Online o'yinchilar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">23</div>
+                        <div class="stat-label">Aktiv o'yinlar</div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary">
+                        <i class="fas fa-play me-2"></i>
+                        Tezkor o'yin
+                    </button>
+                    <button class="action-btn warning">
+                        <i class="fas fa-trophy me-2"></i>
+                        Reyting o'yini
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Page -->
+        <div class="page" id="social">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-share-alt me-3" style="color: #fa709a;"></i>
+                    Ijtimoiy tarmoq
+                </h1>
+                <p class="page-subtitle">Do'stlar bilan ulashing va natijalarni ko'rsating</p>
+
+                <div class="feature-list">
+                    <div class="feature-item social">
+                        <div class="feature-icon">
+                            <i class="fab fa-telegram"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Telegram</h4>
+                            <p>Natijani Telegramda ulashing</p>
+                        </div>
+                    </div>
+                    <div class="feature-item social">
+                        <div class="feature-icon">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Instagram</h4>
+                            <p>Story-ga yuklang</p>
+                        </div>
+                    </div>
+                    <div class="feature-item social">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Yutuqlar</h4>
+                            <p>O'z yutuqlaringizni ko'rsating</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary">
+                        <i class="fas fa-share me-2"></i>
+                        Statistika ulashish
+                    </button>
+                    <button class="action-btn success">
+                        <i class="fas fa-medal me-2"></i>
+                        Yutuqlar ko'rish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Friends List Page -->
+        <div class="page" id="friendslist">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-user-friends me-3" style="color: #56ab2f;"></i>
+                    Do'stlar ro'yxati
+                </h1>
+                <p class="page-subtitle">Do'stlaringiz va ularning faoliyati</p>
+
+                <div class="feature-list">
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-circle" style="color: #00ff00; font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Ahmad_XO</h4>
+                            <p>Online - So'nggi o'yin: 5 daqiqa oldin</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-circle" style="color: #ffaa00; font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Zarina_Pro</h4>
+                            <p>Faol - So'nggi o'yin: 1 soat oldin</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-circle" style="color: #888; font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Sardor_123</h4>
+                            <p>Offline - So'nggi o'yin: 2 kun oldin</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Do'st qo'shish
+                    </button>
+                    <button class="action-btn success">
+                        <i class="fas fa-gamepad me-2"></i>
+                        Do'st chaqirish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chats Page -->
+        <div class="page" id="chats">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-comments me-3" style="color: #00d2ff;"></i>
+                    Chat xonalari
+                </h1>
+                <p class="page-subtitle">Boshqa o'yinchilar bilan suhbatlashing</p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Umumiy chat</h4>
+                            <p>127 online, so'nggi xabar: 2 daqiqa oldin</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>O'zbek o'yinchilar</h4>
+                            <p>45 online, so'nggi xabar: 30 soniya oldin</p>
+                        </div>
+                    </div>
+                    <div class="feature-item bots">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Pro o'yinchilar</h4>
+                            <p>18 online, so'nggi xabar: 1 daqiqa oldin</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn primary">
+                        <i class="fas fa-comment me-2"></i>
+                        Chatga kirish
+                    </button>
+                    <button class="action-btn warning">
+                        <i class="fas fa-plus me-2"></i>
+                        Xona yaratish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="settings">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-cog me-3" style="color: #667eea;"></i>
+                    Sozlamalar
+                </h1>
+                <p class="page-subtitle">O'yin sozlamalari va tizim parametrlari</p>
+
+                <div class="feature-list">
+                    <div class="feature-item social">
+                        <div class="feature-icon">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Tovush sozlamalari</h4>
+                            <p>Ovoz effektlari va musiqa</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Tema sozlamalari</h4>
+                            <p>Rang va dizayn o'zgartirish</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Til sozlamalari</h4>
+                            <p>Interface tilini tanlash</p>
+                        </div>
+                    </div>
+                    <div class="feature-item bots">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Maxfiylik</h4>
+                            <p>Account xavfsizligi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button class="action-btn warning">
+                        <i class="fas fa-save me-2"></i>
+                        Saqlash
+                    </button>
+                    <button class="action-btn danger">
+                        <i class="fas fa-undo me-2"></i>
+                        Standart holatga qaytarish
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WEB UI Page -->
+        <div class="page" id="webui">
+            <div class="page-card">
+                <h1 class="page-title">
+                    <i class="fas fa-globe me-3" style="color: #00d2ff;"></i>
+                    WEB UI Boshqaruv paneli
+                </h1>
+                <p class="page-subtitle">Veb interface va boshqaruv sozlamalari</p>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Statistika</h4>
+                            <p>Batafsil o'yin statistikalari</p>
+                        </div>
+                    </div>
+                    <div class="feature-item social">
+                        <div class="feature-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Ma'lumotlar bazasi</h4>
+                            <p>O'yinlar tarixi va ma'lumotlar</p>
+                        </div>
+                    </div>
+                    <div class="feature-item friends">
+                        <div class="feature-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Server holati</h4>
+                            <p>Tizim ishlash ko'rsatkichlari</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">Server ishlash vaqti</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">1,247</div>
+                        <div class="stat-label">Faol foydalanuvchilar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15,632</div>
+                        <div class="stat-label">Kunlik o'yinlar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Simplified JavaScript - Performance Optimized
+    let currentPage = 'dashboard';
+    let currentNestedSidebar = null;
+    let activeMenuItem = null;
+
+    // Page Management - Simplified
+    function showPage(pageId) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+
+        // Show target page
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            currentPage = pageId;
+        }
+
+        // Close sidebars
+        closeSidebars();
+    }
+
+    // Active state management - Simplified
+    function setActiveMenuItem(menuType) {
+        clearActiveMenuItems();
+        const menuItem = document.querySelector(`[data-menu="${menuType}"]`);
+        if (menuItem) {
+            menuItem.classList.add('active');
+            activeMenuItem = menuItem;
+        }
+    }
+
+    function clearActiveMenuItems() {
+        document.querySelectorAll('.menu-item[data-menu]').forEach(item => {
+            item.classList.remove('active');
+        });
+        activeMenuItem = null;
+    }
+
+    // Sidebar functions - Simplified
+    function toggleSidebar() {
+        const sidebar = document.getElementById('mainSidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (sidebar.classList.contains('active')) {
+            closeNestedSidebar();
+            clearActiveMenuItems();
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        } else {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        }
+    }
+
+    function openNestedSidebar(type) {
+        closeNestedSidebar();
+        setActiveMenuItem(type);
+
+        const nestedSidebar = document.getElementById(type + 'Sidebar');
+        if (nestedSidebar) {
+            nestedSidebar.classList.add('active');
+            currentNestedSidebar = nestedSidebar;
+        }
+    }
+
+    function closeNestedSidebar() {
+        if (currentNestedSidebar) {
+            currentNestedSidebar.classList.remove('active');
+            currentNestedSidebar = null;
+        }
+        clearActiveMenuItems();
+    }
+
+    function closeSidebars() {
+        const sidebar = document.getElementById('mainSidebar');
+        const overlay = document.getElementById('overlay');
+
+        closeNestedSidebar();
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm('Rostdan ham chiqishni xohlaysizmi?')) {
+            alert('Muvaffaqiyatli chiqildi!');
+            showPage('dashboard');
+        }
+    }
+
+    // Touch events - Simplified
+    let touchStartX = 0;
+
+    document.addEventListener('touchstart', function(event) {
+        touchStartX = event.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(event) {
+        const touchEndX = event.changedTouches[0].screenX;
+        const diffX = touchStartX - touchEndX;
+
+        if (Math.abs(diffX) > 80) {
+            if (diffX > 0) {
+                closeSidebars();
+            } else {
+                if (!document.getElementById('mainSidebar').classList.contains('active')) {
+                    toggleSidebar();
+                }
+            }
+        }
+    }, { passive: true });
+
+    // Click outside to close - Simplified
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('mainSidebar');
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+
+        if (!sidebar.contains(event.target) &&
+            !hamburgerBtn.contains(event.target) &&
+            sidebar.classList.contains('active')) {
+            closeSidebars();
+        }
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeSidebars();
+        }
+    });
+
+    // Initialize - Simplified
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('⚡ Fast XO Game initialized!');
+    });
+</script>
+</body>
+</html>
