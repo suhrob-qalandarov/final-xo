@@ -13,6 +13,7 @@ import org.exp.application.services.TelegramButtonService;
 import org.exp.application.services.multigame.MultiGameLogicService;
 import org.exp.application.services.user.TgUserService;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 import java.util.Optional;
 
@@ -84,6 +85,7 @@ public class MultiGameService {
         return saveReturn(multiGame);
     }
 
+    @Transactional
     public MultiGame getOrCreateMultiGame(Long creatorId) {
         Optional<MultiGame> multiGameOptional = gameRepository.findFirstByStatus(GameStatus.IDLE);
         MultiGame multiGame;
@@ -91,7 +93,7 @@ public class MultiGameService {
         if (multiGameOptional.isPresent()) {
             multiGame = multiGameOptional.get();
             multiGame.setStatus(GameStatus.PROGRESS);
-            return multiGame;
+            return saveReturn(multiGame);
 
         } else {
             multiGame = MultiGame.builder()
@@ -100,7 +102,7 @@ public class MultiGameService {
                     .board(new int[3][3])
                     .build();
         }
-        return multiGame;
+        return saveReturn(multiGame);
     }
 
     public Optional<MultiGame> findById(Long gameId) {
