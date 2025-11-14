@@ -31,6 +31,16 @@ jobs:
         run: |
           echo "=== target/ ==="
           ls -la target/ || echo "target/ yo'q"
+          echo "=== JAR faylini tekshirish ==="
+          if [ -f "target/app.jar" ]; then
+            echo "✅ target/app.jar mavjud"
+            ls -lh target/app.jar
+          else
+            echo "❌ target/app.jar topilmadi!"
+            echo "target/ ichidagi fayllar:"
+            ls -la target/ || true
+            exit 1
+          fi
           echo "=== docker-compose.yml ==="
           cat docker-compose.yml || echo "docker-compose.yml yo'q"
           echo "=== Dockerfile ==="
@@ -55,10 +65,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: |
-            target/app.jar
-            docker-compose.yml
-            Dockerfile
+          source: "target/app.jar,docker-compose.yml,Dockerfile"
           target: /home/ubuntu/final-xo/
           overwrite: true
           strip_components: 0
@@ -73,8 +80,12 @@ jobs:
           script: |
             cd ~/final-xo
 
+            # Fayllarni tekshirish
+            echo "=== Serverda fayllar ==="
+            ls -la /home/ubuntu/final-xo/ || echo "final-xo katalogida fayllar topilmadi"
+
             # .env faylini GitHub Secrets dan yaratish
-            cat > .env << 'EOF'
+            cat > .env << EOF
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
@@ -83,6 +94,10 @@ jobs:
             SPRING_DATASOURCE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             EOF
+
+            # dos2unix o'rnatish va .env faylini tozalash (agar kerak bo'lsa)
+            sudo apt-get update -qq && sudo apt-get install -y dos2unix || true
+            dos2unix .env 2>/dev/null || true
 
             # Docker Compose v2 bilan deploy
             docker compose down || true
